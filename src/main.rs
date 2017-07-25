@@ -6,11 +6,11 @@ use rand::Rng;
 
 use std::fs::{create_dir, File};
 use std::io::prelude::*;
+use std::io;
 
 use std::f64::consts::PI;
 
 struct Vicsek {
-    n: u64,
     birds: Vec<Bird>,
     c_r: f64,
     eta: f64,
@@ -23,7 +23,7 @@ impl Vicsek {
         let mut rng = rand::StdRng::new().unwrap();
 
         let mut birds = Vec::new();
-        for i in 0..n {
+        for _ in 0..n {
             let theta = rng.gen::<f64>() * 2. * PI;
             let r = [rng.gen::<f64>(), rng.gen::<f64>()];
             let v0 = 0.001;
@@ -31,9 +31,8 @@ impl Vicsek {
         }
 
         Vicsek {
-            n,
             birds,
-            c_r: 0.01,
+            c_r: 0.05,
             eta: 0.1,
             rng,
         }
@@ -44,6 +43,7 @@ impl Vicsek {
         for _ in 0..n {
             // clone the birds: no borrow conflict -> synchrone update
             let cloned_birds = self.birds.clone();
+            // TODO: this loop can be parallized by rayon
             for mut b in self.birds.iter_mut() {
                 let noise = normal.ind_sample(&mut self.rng);
                 b.update_theta(&cloned_birds, self.c_r, noise);
@@ -52,9 +52,9 @@ impl Vicsek {
         }
     }
 
-    fn save(&self, filename: &str) {
+    fn save(&self, filename: &str) -> io::Result<()> {
         let mut file = File::create(filename).unwrap();
-        write!(file, "# plot with gnuplot: p \"{}\" u 1:2:($3*40):($4*40) with vectors\n", filename);
+        write!(file, "# plot with gnuplot: p \"{}\" u 1:2:($3*40):($4*40) with vectors\n", filename)?;
         for b in self.birds.iter() {
             write!(file, "{} {} {} {} {}\n",
                    b.r[0],
@@ -62,8 +62,9 @@ impl Vicsek {
                    b.v0*b.theta.cos(),
                    b.v0*b.theta.sin(),
                    b.theta,
-            );
+            )?;
         }
+        Ok(())
     }
 }
 
@@ -87,6 +88,8 @@ impl Bird {
         let c_r2 = c_r * c_r;
         let mut theta_x = 0.;
         let mut theta_y = 0.;
+
+        // TODO: implement a cell list approach
         for b in birds.iter() {
             let d2 = self.dist2(b);
             // also sum over yourself
@@ -127,19 +130,23 @@ fn main() {
     create_dir("img");
 
     let mut file = File::create("plot.gp").unwrap();
-    write!(file, "set terminal pngcairo\n");
+    write!(file, "set terminal pngcairo size 1080, 1080\n");
     write!(file, "set xr [0:1]\n");
     write!(file, "set yr [0:1]\n");
     write!(file, "set size square\n");
     write!(file, "unset tics\n");
+    write!(file, "unset key\n");
+    write!(file, "set style arrow 1 head filled size screen 0.025, 30, 45 ls 1\n");
 
     for i in 0..500 {
         let filename = format!("data/test_{}.dat", i);
         v.save(&filename);
 
         write!(file, "set output 'img/test_{}.png'\n", i);
-        write!(file, "p '{}'  u 1:2:($3*40):($4*40) with vectors\n", filename);
+        write!(file, "p '{}'  u 1:2:($3*40):($4*40) with vectors arrowstyle 1\n", filename);
 
         v.sweep(20);
     }
+
+    // TODO call the gnuplot script in parallel
 }
