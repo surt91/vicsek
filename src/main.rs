@@ -10,6 +10,8 @@ use std::io;
 
 use std::collections::HashSet;
 
+use std::process::Command;
+
 use std::f64::consts::PI;
 
 struct CellList {
@@ -236,6 +238,7 @@ fn run() -> io::Result<()> {
     create_dir_all("img")?;
 
     let mut file = File::create("plot.gp")?;
+    write!(file, "# render with 'ffmpeg -f image2 -pattern_type glob -framerate 30 -i \"test_*.png\" -vcodec libx264 flocking2.mp4'\n")?;
     write!(file, "set terminal pngcairo size 1080, 1080\n")?;
     write!(file, "set xr [0:1]\n")?;
     write!(file, "set yr [0:1]\n")?;
@@ -255,6 +258,10 @@ fn run() -> io::Result<()> {
     }
 
     // TODO call the gnuplot script in parallel
+    let output = Command::new("gnuplot")
+                         .arg("plot.gp")
+                         .output();
+
     Ok(())
 }
 
