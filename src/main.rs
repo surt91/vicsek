@@ -4,7 +4,7 @@ extern crate rand;
 use rand::distributions::{Normal, IndependentSample};
 use rand::Rng;
 
-use std::fs::{create_dir, File};
+use std::fs::{create_dir_all, File};
 use std::io::prelude::*;
 use std::io;
 
@@ -139,30 +139,37 @@ impl Bird {
     }
 }
 
-fn main() {
+// TODO pass arguments
+fn run() -> io::Result<()> {
     let mut v = Vicsek::new(300);
 
-    create_dir("data");
-    create_dir("img");
+    create_dir_all("data")?;
+    create_dir_all("img")?;
 
-    let mut file = File::create("plot.gp").unwrap();
-    write!(file, "set terminal pngcairo size 1080, 1080\n");
-    write!(file, "set xr [0:1]\n");
-    write!(file, "set yr [0:1]\n");
-    write!(file, "set size square\n");
-    write!(file, "unset tics\n");
-    write!(file, "unset key\n");
-    write!(file, "set style arrow 1 head filled size screen 0.025, 30, 45 ls 1\n");
+    let mut file = File::create("plot.gp")?;
+    write!(file, "set terminal pngcairo size 1080, 1080\n")?;
+    write!(file, "set xr [0:1]\n")?;
+    write!(file, "set yr [0:1]\n")?;
+    write!(file, "set size square\n")?;
+    write!(file, "unset tics\n")?;
+    write!(file, "unset key\n")?;
+    write!(file, "set style arrow 1 head filled size screen 0.025, 30, 45 ls 1\n")?;
 
     for i in 0..500 {
         let filename = format!("data/test_{}.dat", i);
-        v.save(&filename);
+        v.save(&filename)?;
 
-        write!(file, "set output 'img/test_{}.png'\n", i);
-        write!(file, "p '{}'  u 1:2:($3*40):($4*40) with vectors arrowstyle 1\n", filename);
+        write!(file, "set output 'img/test_{}.png'\n", i)?;
+        write!(file, "p '{}'  u 1:2:($3*40):($4*40) with vectors arrowstyle 1\n", filename)?;
 
         v.sweep(20);
     }
 
     // TODO call the gnuplot script in parallel
+    Ok(())
+}
+
+fn main() {
+    // TODO CLAP
+    run().expect("IO error");
 }
