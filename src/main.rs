@@ -118,8 +118,24 @@ impl Bird {
         }
     }
 
+    /// return squared eucledian dist respecting periodic boundaries
     fn dist2(&self, other: &Bird) -> f64 {
-        return (self.r[0] - other.r[0]).powi(2) + (self.r[1] - other.r[1]).powi(2)
+        // take the image bird nearest to you
+        let dx = self.dist_x(other);
+        let dy = self.dist_y(other);
+        // since the space is 1x1, just take min(x, x-0.5) for periodic boundaries
+        let dx = if dx < (dx-0.5).abs() {dx} else {dx-0.5};
+        let dy = if dy < (dy-0.5).abs() {dy} else {dy-0.5};
+
+        dx.powi(2) + dy.powi(2)
+    }
+
+    fn dist_x(&self, other: &Bird) -> f64 {
+        (self.r[0] - other.r[0])
+    }
+
+    fn dist_y(&self, other: &Bird) -> f64 {
+        (self.r[1] - other.r[1])
     }
 }
 
