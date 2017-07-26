@@ -123,9 +123,9 @@ impl Bird {
         // take the image bird nearest to you
         let dx = self.dist_x(other);
         let dy = self.dist_y(other);
-        // since the space is 1x1, just take min(x, x-0.5) for periodic boundaries
-        let dx = if dx < (dx-0.5).abs() {dx} else {dx-0.5};
-        let dy = if dy < (dy-0.5).abs() {dy} else {dy-0.5};
+        // since the space is 1x1, just take min(x, x-1) for periodic boundaries
+        let dx = if dx < (dx-1.).abs() {dx} else {dx-1.};
+        let dy = if dy < (dy-1.).abs() {dy} else {dy-1.};
 
         dx.powi(2) + dy.powi(2)
     }
