@@ -94,10 +94,9 @@ struct Vicsek {
 }
 
 impl Vicsek {
-    fn new(n: u64) -> Vicsek {
+    fn new(n: u64, c_r: f64) -> Vicsek {
         // { let s: &[_] = &[x]; rand::SeedableRng::from_seed(s) },
         let mut rng = rand::StdRng::new().unwrap();
-        let c_r = 0.01;
         let l = (1./c_r) as usize;
         let mut cell_list = CellList::new(l);
 
@@ -121,6 +120,7 @@ impl Vicsek {
 
     fn sweep(&mut self, n:u64) {
         let normal = Normal::new(0., self.eta);
+        // self.cell_list.print();
         for _ in 0..n {
             // clone the birds: no borrow conflict -> synchrone update
             let cloned_birds = self.birds.clone();
@@ -231,8 +231,8 @@ impl Bird {
 }
 
 // TODO pass arguments
-fn run() -> io::Result<()> {
-    let mut v = Vicsek::new(300);
+fn run(num_birds: u64, num_iterations: u64, c_r: f64) -> io::Result<()> {
+    let mut v = Vicsek::new(num_birds, c_r);
 
     create_dir_all("data")?;
     create_dir_all("img")?;
@@ -247,7 +247,7 @@ fn run() -> io::Result<()> {
     write!(file, "unset key\n")?;
     write!(file, "set style arrow 1 head filled size screen 0.025, 30, 45 ls 1\n")?;
 
-    for i in 0..500 {
+    for i in 0..num_iterations {
         let filename = format!("data/test_{:04}.dat", i);
         v.save(&filename)?;
 
@@ -267,5 +267,5 @@ fn run() -> io::Result<()> {
 
 fn main() {
     // TODO CLAP
-    run().expect("IO error");
+    run(1000, 500, 0.05).expect("IO error");
 }
