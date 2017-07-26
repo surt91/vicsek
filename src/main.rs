@@ -8,33 +8,112 @@ use std::fs::{create_dir_all, File};
 use std::io::prelude::*;
 use std::io;
 
+use std::collections::HashSet;
+
 use std::f64::consts::PI;
+
+struct CellList {
+    l: usize,
+    list: Vec<HashSet<usize>>,
+}
+
+impl CellList {
+    fn new(l: usize) -> CellList {
+        let list = vec![HashSet::new(); l.pow(2)];
+
+        CellList {
+            l,
+            list,
+        }
+    }
+
+    fn add(&mut self, r: [f64; 2], idx: usize) {
+        let x = (r[0] * self.l as f64) as usize;
+        let y = (r[1] * self.l as f64) as usize;
+        self.list[x*self.l + y].insert(idx);
+    }
+
+    fn remove(&mut self, r: [f64; 2], idx: usize) {
+        let x = (r[0] * self.l as f64) as usize;
+        let y = (r[1] * self.l as f64) as usize;
+        self.list[x*self.l + y].remove(&idx);
+    }
+
+    /// return all indices contained in adjacent cells
+    fn adjacent(&self, r: [f64; 2]) -> Vec<usize> {
+        let mut tmp = Vec::new();
+        let x_idx = (r[0] * self.l as f64) as i64;
+        let y_idx = (r[1] * self.l as f64) as i64;
+        let l = self.l as i64;
+        for mut x in (x_idx-1)..(x_idx+1) {
+            if x < 0 {
+                x = l + x
+            }
+            if x >= l  {
+                x = x - l;
+            }
+            for mut y in (y_idx-1)..(y_idx+1) {
+                if y < 0 {
+                    y = l + y
+                }
+                if y >= l  {
+                    y = y - l;
+                }
+                for idx in self.list[(x*l + y) as usize].clone() {
+                    tmp.push(idx);
+                }
+            }
+        }
+        tmp
+    }
+
+    fn print(&self) {
+        for i in 0..self.l {
+            for j in 0..self.l {
+                print!("[");
+                for x in self.list[i*self.l + j].iter() {
+                    print!("{}, ", x);
+                }
+                print!("], ");
+            }
+            print!("\n");
+        }
+        print!("\n");
+        print!("\n");
+    }
+}
 
 struct Vicsek {
     birds: Vec<Bird>,
     c_r: f64,
     eta: f64,
     rng: rand::StdRng,
+    cell_list: CellList, //< cell list with indecies of the birds
 }
 
 impl Vicsek {
     fn new(n: u64) -> Vicsek {
         // { let s: &[_] = &[x]; rand::SeedableRng::from_seed(s) },
         let mut rng = rand::StdRng::new().unwrap();
+        let c_r = 0.01;
+        let l = (1./c_r) as usize;
+        let mut cell_list = CellList::new(l);
 
         let mut birds = Vec::new();
-        for _ in 0..n {
+        for idx in 0..n as usize {
             let theta = rng.gen::<f64>() * 2. * PI;
             let r = [rng.gen::<f64>(), rng.gen::<f64>()];
             let v0 = 0.001;
             birds.push(Bird::new(theta, r, v0));
+            cell_list.add(r, idx);
         }
 
         Vicsek {
             birds,
-            c_r: 0.05,
+            c_r,
             eta: 0.1,
             rng,
+            cell_list,
         }
     }
 
@@ -44,10 +123,21 @@ impl Vicsek {
             // clone the birds: no borrow conflict -> synchrone update
             let cloned_birds = self.birds.clone();
             // TODO: this loop can be parallized by rayon
-            for mut b in self.birds.iter_mut() {
+            for (idx, mut b) in self.birds.iter_mut().enumerate() {
                 let noise = normal.ind_sample(&mut self.rng);
-                b.update_theta(&cloned_birds, self.c_r, noise);
+
+                let mut candidates = Vec::new();
+                for i in self.cell_list.adjacent(b.r).iter() {
+                    candidates.push(cloned_birds[*i].clone());
+                }
+
+                b.update_theta(&candidates, self.c_r, noise);
+
+                // remove from cell list before update
+                self.cell_list.remove(b.r, idx);
                 b.update_r();
+                // add to new cell after update
+                self.cell_list.add(b.r, idx);
             }
         }
     }
@@ -89,7 +179,6 @@ impl Bird {
         let mut theta_x = 0.;
         let mut theta_y = 0.;
 
-        // TODO: implement a cell list approach
         for b in birds.iter() {
             let d2 = self.dist2(b);
             // also sum over yourself
