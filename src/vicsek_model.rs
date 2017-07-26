@@ -4,7 +4,7 @@ use rand::Rng;
 
 use std::fs::File;
 use std::io::prelude::*;
-use std::io;
+use std::io::{self, BufWriter};
 
 use std::f64::consts::PI;
 
@@ -73,7 +73,7 @@ impl Vicsek {
     }
 
     pub fn save(&self, filename: &str) -> io::Result<()> {
-        let mut file = File::create(filename).unwrap();
+        let mut file = BufWriter::new(File::create(filename).unwrap());
         write!(file, "# plot with gnuplot: p \"{}\" u 1:2:($3*40):($4*40) with vectors\n", filename)?;
         for b in self.birds.iter() {
             write!(file, "{} {} {} {} {}\n",
