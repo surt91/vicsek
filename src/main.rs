@@ -156,10 +156,10 @@ fn run() -> io::Result<()> {
     write!(file, "set style arrow 1 head filled size screen 0.025, 30, 45 ls 1\n")?;
 
     for i in 0..500 {
-        let filename = format!("data/test_{}.dat", i);
+        let filename = format!("data/test_{:04}.dat", i);
         v.save(&filename)?;
 
-        write!(file, "set output 'img/test_{}.png'\n", i)?;
+        write!(file, "set output 'img/test_{:04}.png'\n", i)?;
         write!(file, "p '{}'  u 1:2:($3*40):($4*40) with vectors arrowstyle 1\n", filename)?;
 
         v.sweep(20);
