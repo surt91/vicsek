@@ -33,14 +33,14 @@ impl CellList {
         let x_idx = (r[0] * self.l as f64) as i64;
         let y_idx = (r[1] * self.l as f64) as i64;
         let l = self.l as i64;
-        for mut x in (x_idx-1)..(x_idx+1) {
+        for mut x in (x_idx-1)..(x_idx+2) {
             if x < 0 {
                 x = l + x
             }
             if x >= l  {
                 x = x - l;
             }
-            for mut y in (y_idx-1)..(y_idx+1) {
+            for mut y in (y_idx-1)..(y_idx+2) {
                 if y < 0 {
                     y = l + y
                 }
