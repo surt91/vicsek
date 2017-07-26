@@ -230,7 +230,6 @@ impl Bird {
     }
 }
 
-// TODO pass arguments
 fn run(num_birds: u64, num_iterations: u64, c_r: f64) -> io::Result<()> {
     let mut v = Vicsek::new(num_birds, c_r);
 
