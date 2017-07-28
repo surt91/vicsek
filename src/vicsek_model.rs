@@ -75,13 +75,13 @@ impl Vicsek {
 
     pub fn save(&self, filename: &str) -> io::Result<()> {
         let mut file = BufWriter::new(File::create(filename).unwrap());
-        write!(file, "# plot with gnuplot: p \"{}\" u 1:2:($3*40):($4*40) with vectors\n", filename)?;
+        write!(file, "# plot with gnuplot: p \"{}\" u 1:2:($3*0.05):($4*0.05) with vectors\n", filename)?;
         for b in self.birds.iter() {
-            write!(file, "{} {} {} {} {}\n",
+            write!(file, "{:.4} {:.4} {:.4} {:.4} {:.4}\n",
                    b.r[0],
                    b.r[1],
-                   b.v0*b.v[0],
-                   b.v0*b.v[1],
+                   b.v[0],
+                   b.v[1],
                    b.v[1].atan2(b.v[0]),
             )?;
         }
