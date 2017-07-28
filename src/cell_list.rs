@@ -1,4 +1,7 @@
 use std::collections::HashSet;
+use std::cmp::{max, Ordering};
+
+use super::bird::Bird;
 
 pub struct CellList {
     l: usize,
@@ -27,31 +30,38 @@ impl CellList {
         self.list[x*self.l + y].remove(&idx);
     }
 
-    /// return all indices contained in adjacent cells
-    pub fn adjacent(&self, r: [f64; 2]) -> Vec<usize> {
+    // TODO make into an iterator
+    pub fn adjacent_level(&self, bird: &Bird, n: i64, pos: &[Bird]) -> Vec<usize>
+    {
+        let r = bird.r;
         let mut tmp = Vec::new();
         let x_idx = (r[0] * self.l as f64) as i64;
         let y_idx = (r[1] * self.l as f64) as i64;
         let l = self.l as i64;
-        for mut x in (x_idx-1)..(x_idx+2) {
+        for mut x in (x_idx-n)..(x_idx+n+1) {
             if x < 0 {
                 x = l + x
             }
             if x >= l  {
                 x = x - l;
             }
-            for mut y in (y_idx-1)..(y_idx+2) {
+            for mut y in (y_idx-n)..(y_idx+n+1) {
                 if y < 0 {
                     y = l + y
                 }
                 if y >= l  {
                     y = y - l;
                 }
-                for idx in self.list[(x*l + y) as usize].clone() {
-                    tmp.push(idx);
+                // only use, if maximum norm is equal n
+                if max((x-x_idx).abs(), (y-y_idx).abs()) == n {
+                    for idx in self.list[(x*l + y) as usize].clone() {
+                        tmp.push(idx);
+                    }
                 }
             }
         }
+        // sort by distance to r
+        tmp.sort_by(|&a, &b| pos[a].dist2(bird).partial_cmp(&pos[b].dist2(bird)).unwrap_or(Ordering::Greater));
         tmp
     }
 

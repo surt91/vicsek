@@ -12,8 +12,8 @@ mod vicsek_model;
 mod bird;
 
 
-fn run(num_birds: u64, num_iterations: u64, c_r: f64) -> io::Result<()> {
-    let mut v = vicsek_model::Vicsek::new(num_birds, c_r);
+fn run(num_birds: u64, num_iterations: u64, neighbors: usize) -> io::Result<()> {
+    let mut v = vicsek_model::Vicsek::new(num_birds, neighbors);
 
     create_dir_all("data")?;
     create_dir_all("img")?;

@@ -14,18 +14,13 @@ impl Bird {
         }
     }
 
-    pub fn update_direction(&mut self, birds: &[Bird], c_r:f64, noise: [f64; 2]) {
-        let c_r2 = c_r * c_r;
+    pub fn update_direction(&mut self, birds: &[Bird], noise: [f64; 2]) {
         let mut dx = 0.;
         let mut dy = 0.;
 
         for b in birds.iter() {
-            let d2 = self.dist2(b);
-            // also sum over yourself
-            if d2 < c_r2 {
-                dx += b.v[0];
-                dy += b.v[1];
-            }
+            dx += b.v[0];
+            dy += b.v[1];
         }
         let norm = (dx.powi(2) + dy.powi(2)).sqrt();
         self.v = [dx/norm + noise[0], dy/norm + noise[1]];
@@ -49,7 +44,7 @@ impl Bird {
     }
 
     /// return squared eucledian dist respecting periodic boundaries
-    fn dist2(&self, other: &Bird) -> f64 {
+    pub fn dist2(&self, other: &Bird) -> f64 {
         // take the image bird nearest to you
         let dx = self.dist_x(other);
         let dy = self.dist_y(other);

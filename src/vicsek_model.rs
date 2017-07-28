@@ -14,18 +14,18 @@ use cell_list::CellList;
 
 pub struct Vicsek {
     birds: Vec<Bird>,
-    c_r: f64,
+    neighbors: usize,
     eta: f64,
     rng: rand::StdRng,
     cell_list: CellList, //< cell list with indecies of the birds
 }
 
 impl Vicsek {
-    pub fn new(n: u64, c_r: f64) -> Vicsek {
-        let x = 1;
+    pub fn new(n: u64, neighbors: usize) -> Vicsek {
+        // let x = 1;
         // let mut rng: rand::StdRng = { let s: &[_] = &[x]; rand::SeedableRng::from_seed(s) };
         let mut rng = rand::StdRng::new().unwrap();
-        let l = (1./c_r) as usize;
+        let l = (n as f64).sqrt() as usize;
         let mut cell_list = CellList::new(l);
 
         let mut birds = Vec::new();
@@ -40,7 +40,7 @@ impl Vicsek {
 
         Vicsek {
             birds,
-            c_r,
+            neighbors,
             eta: 0.1,
             rng,
             cell_list,
@@ -58,11 +58,18 @@ impl Vicsek {
                 let noise = [normal.ind_sample(&mut self.rng), normal.ind_sample(&mut self.rng)];
 
                 let mut candidates = Vec::new();
-                for i in self.cell_list.adjacent(b.r).iter() {
-                    candidates.push(cloned_birds[*i].clone());
+                let mut level = 0;
+                'outer: loop {
+                    for i in self.cell_list.adjacent_level(b, level, &cloned_birds).iter() {
+                        candidates.push(cloned_birds[*i].clone());
+                        if candidates.len() >= self.neighbors {
+                            break 'outer
+                        }
+                    }
+                    level += 1;
                 }
 
-                b.update_direction(&candidates, self.c_r, noise);
+                b.update_direction(&candidates, noise);
 
                 // remove from cell list before update
                 self.cell_list.remove(b.r, idx);
