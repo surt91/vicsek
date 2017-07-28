@@ -24,6 +24,7 @@ fn run(num_birds: u64, num_iterations: u64, neighbors: usize) -> io::Result<()> 
     write!(file, "set xr [0:1]\n")?;
     write!(file, "set yr [0:1]\n")?;
     write!(file, "set cbr [-pi:pi]\n")?;
+    write!(file, "set palette defined (-pi \"red\", -pi/2 \"blue\", 0 \"green\",  pi/2 \"yellow\", pi \"red\")\n")?;
     write!(file, "set size square\n")?;
     write!(file, "unset tics\n")?;
     write!(file, "unset key\n")?;
