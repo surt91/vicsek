@@ -23,17 +23,19 @@ fn run(num_birds: u64, num_iterations: u64, c_r: f64) -> io::Result<()> {
     write!(file, "set terminal pngcairo size 1080, 1080\n")?;
     write!(file, "set xr [0:1]\n")?;
     write!(file, "set yr [0:1]\n")?;
+    write!(file, "set cbr [-pi:pi]\n")?;
     write!(file, "set size square\n")?;
     write!(file, "unset tics\n")?;
     write!(file, "unset key\n")?;
-    write!(file, "set style arrow 1 head filled size screen 0.025, 30, 45 ls 1\n")?;
+    write!(file, "unset colorbox\n")?;
+    write!(file, "set style arrow 1 head filled size screen 0.025, 30, 45 ls 1 lc palette\n")?;
 
     for i in 0..num_iterations {
         let filename = format!("data/test_{:04}.dat", i);
         v.save(&filename)?;
 
         write!(file, "set output 'img/test_{:04}.png'\n", i)?;
-        write!(file, "p '{}'  u 1:2:($3*40):($4*40) with vectors arrowstyle 1\n", filename)?;
+        write!(file, "p '{}'  u 1:2:($3*0.03):($4*0.03):5 with vectors arrowstyle 1\n", filename)?;
 
         v.sweep(20);
     }
