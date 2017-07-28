@@ -1,38 +1,39 @@
 #[derive(Clone)]
 pub struct Bird {
-    pub theta: f64,
     pub r: [f64; 2],
+    pub v: [f64; 2],
     pub v0: f64,
 }
 
 impl Bird {
-    pub fn new(theta: f64, r: [f64; 2], v0: f64) -> Bird {
+    pub fn new(r: [f64; 2], v: [f64; 2], v0: f64) -> Bird {
         Bird {
-            theta,
             r,
+            v,
             v0,
         }
     }
 
-    pub fn update_theta(&mut self, birds: &[Bird], c_r:f64, noise: f64) {
+    pub fn update_direction(&mut self, birds: &[Bird], c_r:f64, noise: [f64; 2]) {
         let c_r2 = c_r * c_r;
-        let mut theta_x = 0.;
-        let mut theta_y = 0.;
+        let mut dx = 0.;
+        let mut dy = 0.;
 
         for b in birds.iter() {
             let d2 = self.dist2(b);
             // also sum over yourself
             if d2 < c_r2 {
-                theta_x += b.theta.cos();
-                theta_y += b.theta.sin();
+                dx += b.v[0];
+                dy += b.v[1];
             }
         }
-        self.theta = theta_y.atan2(theta_x) + noise;
+        let norm = (dx.powi(2) + dy.powi(2)).sqrt();
+        self.v = [dx/norm + noise[0], dy/norm + noise[1]];
     }
 
     pub fn update_r(&mut self) {
-        self.r[0] += self.v0 * self.theta.cos();
-        self.r[1] += self.v0 * self.theta.sin();
+        self.r[0] += self.v0 * self.v[0];
+        self.r[1] += self.v0 * self.v[1];
 
         // periodic boundaries
         if self.r[0] > 1. {

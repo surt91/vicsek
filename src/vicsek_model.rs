@@ -31,9 +31,10 @@ impl Vicsek {
         let mut birds = Vec::new();
         for idx in 0..n as usize {
             let theta = rng.gen::<f64>() * 2. * PI;
+            let v = [theta.cos(), theta.sin()];
             let r = [rng.gen::<f64>(), rng.gen::<f64>()];
             let v0 = 0.001;
-            birds.push(Bird::new(theta, r, v0));
+            birds.push(Bird::new(r, v, v0));
             cell_list.add(r, idx);
         }
 
@@ -54,14 +55,14 @@ impl Vicsek {
             let cloned_birds = self.birds.clone();
             // TODO: this loop can be parallized by rayon
             for (idx, mut b) in self.birds.iter_mut().enumerate() {
-                let noise = normal.ind_sample(&mut self.rng);
+                let noise = [normal.ind_sample(&mut self.rng), normal.ind_sample(&mut self.rng)];
 
                 let mut candidates = Vec::new();
                 for i in self.cell_list.adjacent(b.r).iter() {
                     candidates.push(cloned_birds[*i].clone());
                 }
 
-                b.update_theta(&candidates, self.c_r, noise);
+                b.update_direction(&candidates, self.c_r, noise);
 
                 // remove from cell list before update
                 self.cell_list.remove(b.r, idx);
@@ -79,9 +80,9 @@ impl Vicsek {
             write!(file, "{} {} {} {} {}\n",
                    b.r[0],
                    b.r[1],
-                   b.v0*b.theta.cos(),
-                   b.v0*b.theta.sin(),
-                   b.theta,
+                   b.v0*b.v[0],
+                   b.v0*b.v[1],
+                   b.v[1].atan2(b.v[0]),
             )?;
         }
         Ok(())
