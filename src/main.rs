@@ -10,16 +10,16 @@ use std::process::Command;
 mod cell_list;
 mod vicsek_model;
 mod bird;
+mod parse_cl;
 
 
-fn run(num_birds: u64, num_iterations: u64, neighbors: usize) -> io::Result<()> {
+fn run(num_birds: u64, num_iterations: u64, neighbors: usize, filename: &str) -> io::Result<()> {
     let mut v = vicsek_model::Vicsek::new(num_birds, neighbors);
 
     create_dir_all("data")?;
     create_dir_all("img")?;
 
     let mut file = File::create("plot.gp")?;
-    write!(file, "# render with 'ffmpeg -f image2 -pattern_type glob -framerate 30 -i \"test_*.png\" -vcodec libx264 flocking2.mp4'\n")?;
     write!(file, "set terminal pngcairo size 1080, 1080\n")?;
     write!(file, "set xr [0:1]\n")?;
     write!(file, "set yr [0:1]\n")?;
@@ -32,13 +32,13 @@ fn run(num_birds: u64, num_iterations: u64, neighbors: usize) -> io::Result<()> 
     write!(file, "set style arrow 1 head filled size screen 0.025, 30, 45 ls 1 lc palette\n")?;
 
     for i in 0..num_iterations {
-        let filename = format!("data/test_{:04}.dat", i);
-        v.save(&filename)?;
+        let dataname = format!("data/{}_{:04}.dat", filename, i);
+        v.save(&dataname)?;
 
-        write!(file, "set output 'img/test_{:04}.png'\n", i)?;
-        write!(file, "p '{}'  u 1:2:($3*0.03):($4*0.03):5 with vectors arrowstyle 1\n", filename)?;
+        write!(file, "set output 'img/{}_{:04}.png'\n", filename, i)?;
+        write!(file, "p '{}'  u 1:2:($3*0.03):($4*0.03):5 with vectors arrowstyle 1\n", dataname)?;
 
-        v.sweep(20);
+        v.sweep(5);
     }
 
     // TODO call the gnuplot script in parallel
@@ -46,10 +46,25 @@ fn run(num_birds: u64, num_iterations: u64, neighbors: usize) -> io::Result<()> 
                     .arg("plot.gp")
                     .output();
 
+    // ffmpeg -f image2 -pattern_type glob -framerate 30 -i "test_*.png" -vcodec libx264 flockingColorNeighbors7.mp4
+    let _ = Command::new("ffmpeg")
+                    .arg("-f").arg("image2")
+                    .arg("-pattern_type").arg("glob")
+                    .arg("-framerate").arg("30")
+                    .arg("-i").arg(format!("img/{}_*.png", filename))
+                    .arg("-vcodec").arg("libx264")
+                    .arg(format!("{}.mp4", filename))
+                    .output();
+
     Ok(())
 }
 
 fn main() {
-    // TODO CLAP
-    run(300, 100, 0.05).expect("IO error");
+    let o = parse_cl::parse_cl();
+    // TODO alternatively show on screen, dont save anything
+    run(o.num_birds.unwrap_or(500),
+        o.num_steps.unwrap_or(300),
+        o.num_neighbors.unwrap_or(4),
+        &o.filename.unwrap_or("test".to_owned()),
+    ).expect("IO error");
 }

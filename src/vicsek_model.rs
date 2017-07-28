@@ -82,7 +82,6 @@ impl Vicsek {
 
     pub fn save(&self, filename: &str) -> io::Result<()> {
         let mut file = BufWriter::new(File::create(filename).unwrap());
-        write!(file, "# plot with gnuplot: p \"{}\" u 1:2:($3*0.05):($4*0.05) with vectors\n", filename)?;
         for b in self.birds.iter() {
             write!(file, "{:.4} {:.4} {:.4} {:.4} {:.4}\n",
                    b.r[0],
