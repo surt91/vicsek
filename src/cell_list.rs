@@ -4,7 +4,7 @@ use std::cmp::{max, Ordering};
 use super::bird::Bird;
 
 pub struct CellList {
-    l: usize,
+    pub l: usize,
     list: Vec<HashSet<usize>>,
 }
 

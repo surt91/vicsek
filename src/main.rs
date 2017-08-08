@@ -14,9 +14,9 @@ mod parse_cl;
 mod animate;
 
 
-fn run(num_birds: u64, num_iterations: u64, neighbors: usize, filename: &str) -> io::Result<()> {
+fn run(num_birds: u64, num_iterations: u64, proximity: parse_cl::Proximity, filename: &str) -> io::Result<()> {
     println!("start");
-    let mut v = vicsek_model::Vicsek::new(num_birds, neighbors);
+    let mut v = vicsek_model::Vicsek::new(num_birds, proximity);
 
     create_dir_all("data")?;
     create_dir_all("img")?;
@@ -40,7 +40,7 @@ fn run(num_birds: u64, num_iterations: u64, neighbors: usize, filename: &str) ->
         write!(file, "set output 'img/{}_{:04}.png'\n", filename, i)?;
         write!(file, "p '{}'  u 1:2:($3*0.003):($4*0.003):5 with vectors arrowstyle 1\n", dataname)?;
 
-        v.sweep(5);
+        v.sweep(3);
     }
 
     println!("gnuplot");
@@ -67,12 +67,12 @@ fn main() {
 
     if o.gnuplot {
         run(o.num_birds.unwrap_or(500),
-            o.num_steps.unwrap_or(300),
-            o.num_neighbors.unwrap_or(4),
+            o.num_steps.unwrap_or(900),
+            o.proximity,
             &o.filename.unwrap_or_else(|| "test".to_owned()),
         ).expect("IO error");
     } else {
-        let mut v = vicsek_model::Vicsek::new(o.num_birds.unwrap_or(500), o.num_neighbors.unwrap_or(4));
+        let mut v = vicsek_model::Vicsek::new(o.num_birds.unwrap_or(500), o.proximity);
         animate::show((500, 500), &mut v);
     }
 }

@@ -3,14 +3,20 @@ extern crate clap;
 use self::clap::{App, Arg};
 
 #[derive(Debug)]
+pub enum Proximity {
+    Neighbors(usize),
+    Radius(f64)
+}
+
+#[derive(Debug)]
 pub struct Options {
     pub seed: Option<usize>,
     pub filename: Option<String>,
     pub num_birds: Option<u64>,
     pub num_steps: Option<u64>,
-    pub num_neighbors: Option<usize>,
     pub gnuplot: bool,
     pub animate: bool,
+    pub proximity: Proximity,
 }
 
 pub fn parse_cl() -> Options {
@@ -55,9 +61,17 @@ pub fn parse_cl() -> Options {
               )
               .arg(Arg::with_name("num_neighbors")
                     .short("m")
-                    .long("nieghbors")
+                    .long("neighbors")
                     .takes_value(true)
                     .help("number of neighbors for the birds to orient")
+                    .conflicts_with("radius")
+              )
+              .arg(Arg::with_name("radius")
+                    .short("r")
+                    .long("radius")
+                    .takes_value(true)
+                    .help("radius for the birds to orient")
+                    .conflicts_with("num_neighbors")
               )
               .get_matches();
 
@@ -71,15 +85,30 @@ pub fn parse_cl() -> Options {
                       .or_else(|| None);
 
     let num_birds = matches.value_of("num_birds")
-                           .and_then(|s| Some(s.parse::<u64>().expect("seed needs to be an integer")))
+                           .and_then(|s| Some(s.parse::<u64>().expect("birds needs to be an integer")))
                            .or_else(|| None);
 
-    let num_neighbors = matches.value_of("num_neighbors")
-                               .and_then(|s| Some(s.parse::<usize>().expect("seed needs to be an integer")))
-                               .or_else(|| None);
+    let proximity =
+        if matches.is_present("num_neighbors") {
+            Proximity::Neighbors(
+                matches.value_of("num_neighbors")
+                       .and_then(|s| Some(s.parse::<usize>().expect("neighbors needs to be an integer")))
+                       .or_else(|| None)
+                       .unwrap()
+            )
+        } else if matches.is_present("radius") {
+            Proximity::Radius(
+                matches.value_of("radius")
+                       .and_then(|s| Some(s.parse::<f64>().expect("radius needs to be a float")))
+                       .or_else(|| None)
+                       .unwrap()
+            )
+        } else {
+            Proximity::Radius(0.03)
+        };
 
     let num_steps = matches.value_of("num_steps")
-                           .and_then(|s| Some(s.parse::<u64>().expect("seed needs to be an integer")))
+                           .and_then(|s| Some(s.parse::<u64>().expect("steps needs to be an integer")))
                            .or_else(|| None);
 
 
@@ -89,7 +118,7 @@ pub fn parse_cl() -> Options {
         gnuplot,
         animate,
         num_birds,
-        num_neighbors,
-        num_steps
+        num_steps,
+        proximity
     }
 }
