@@ -40,17 +40,17 @@ impl CellList {
         let l = self.l as i64;
         for mut x in (x_idx-n)..(x_idx+n+1) {
             if x < 0 {
-                x = l + x
+                x += l
             }
             if x >= l  {
-                x = x - l;
+                x -= l;
             }
             for mut y in (y_idx-n)..(y_idx+n+1) {
                 if y < 0 {
-                    y = l + y
+                    y += l
                 }
                 if y >= l  {
-                    y = y - l;
+                    y -= l;
                 }
                 // only use, if maximum norm is equal n
                 if max((x-x_idx).abs(), (y-y_idx).abs()) == n {

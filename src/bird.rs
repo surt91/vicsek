@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Bird {
     pub r: [f64; 2],
     pub v: [f64; 2],

@@ -49,7 +49,6 @@ impl Vicsek {
 
     pub fn sweep(&mut self, n:u64) {
         let normal = Normal::new(0., self.eta);
-        // self.cell_list.print();
         for _ in 0..n {
             // clone the birds: no borrow conflict -> synchrone update
             let cloned_birds = self.birds.clone();
@@ -60,7 +59,7 @@ impl Vicsek {
                 let mut candidates = Vec::new();
                 let mut level = 0;
                 'outer: loop {
-                    for i in self.cell_list.adjacent_level(b, level, &cloned_birds).iter() {
+                    for i in &self.cell_list.adjacent_level(b, level, &cloned_birds) {
                         candidates.push(cloned_birds[*i].clone());
                         if candidates.len() >= self.neighbors {
                             break 'outer
@@ -70,6 +69,7 @@ impl Vicsek {
                 }
 
                 b.update_direction(&candidates, noise);
+                // b.update_direction_disk(&cloned_birds, self.c_r, noise);
 
                 // remove from cell list before update
                 self.cell_list.remove(b.r, idx);
@@ -82,7 +82,7 @@ impl Vicsek {
 
     pub fn save(&self, filename: &str) -> io::Result<()> {
         let mut file = BufWriter::new(File::create(filename).unwrap());
-        for b in self.birds.iter() {
+        for b in &self.birds {
             write!(file, "{:.4} {:.4} {:.4} {:.4} {:.4}\n",
                    b.r[0],
                    b.r[1],

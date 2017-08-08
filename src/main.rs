@@ -15,6 +15,7 @@ mod animate;
 
 
 fn run(num_birds: u64, num_iterations: u64, neighbors: usize, filename: &str) -> io::Result<()> {
+    println!("start");
     let mut v = vicsek_model::Vicsek::new(num_birds, neighbors);
 
     create_dir_all("data")?;
@@ -42,12 +43,13 @@ fn run(num_birds: u64, num_iterations: u64, neighbors: usize, filename: &str) ->
         v.sweep(5);
     }
 
+    println!("gnuplot");
     // TODO call the gnuplot script in parallel
     let _ = Command::new("gnuplot")
                     .arg("plot.gp")
                     .output();
 
-    // ffmpeg -f image2 -pattern_type glob -framerate 30 -i "test_*.png" -vcodec libx264 flockingColorNeighbors7.mp4
+    println!("ffmpeg");
     let _ = Command::new("ffmpeg")
                     .arg("-f").arg("image2")
                     .arg("-pattern_type").arg("glob")

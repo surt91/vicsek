@@ -76,11 +76,11 @@ pub fn show(size: (u32, u32), vicsek: &mut Vicsek) {
                     F => println!("{} FPS", rate),
                     Up => {
                         sweeps_per_second *= 1.2;
-                        println!("{} sweeps per second", sweeps_per_second);
+                        println!("{:.0} sweeps per second", sweeps_per_second);
                     }
                     Down => {
                         sweeps_per_second /= 1.2;
-                        println!("{} sweeps per second", sweeps_per_second);
+                        println!("{:.0} sweeps per second", sweeps_per_second);
                     }
                     _ => ()
                 };
