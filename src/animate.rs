@@ -7,6 +7,7 @@ extern crate fps_counter;
 extern crate rand;
 
 use std::cmp::min;
+use std::f64::consts::PI;
 
 use self::graphics::*;
 use self::sdl2_window::Sdl2Window as Window;
@@ -21,11 +22,36 @@ use self::fps_counter::FPSCounter;
 use super::vicsek_model::Vicsek;
 use super::bird::Bird;
 
+/// convert a hsv color representations into a rgb representation
+fn hsv2rgb(h: f64, s: f64, v: f64) -> (f64, f64, f64) {
+    // https://de.wikipedia.org/wiki/HSV-Farbraum#Umrechnung_HSV_in_RGB
+    let hi = (h * 6.).floor() as u32;
+    let f = h * 6. - hi as f64;
+    let p = v*(1.-s);
+    let q = v*(1.-s*f);
+    let t = v*(1.-s*(1.-f));
+
+    match hi {
+        0 | 6 => (v, t, p),
+        1 => (q, v, p),
+        2 => (p, v, t),
+        3 => (p, q, v),
+        4 => (t, p, v),
+        5 => (v, p, q),
+        _ => (0., 0., 0.)
+    }
+}
+
+fn angle_to_color(angle: f64) -> types::Color {
+    let (r, g, b) = hsv2rgb((angle + 2.*PI)%(2.*PI)/PI/2., 1., 1.);
+    [r as f32, g as f32, b as f32, 1.]
+}
+
 fn draw_arrow<G>(pos: (f64, f64), angle: f64, scale: f64, c: &Context, gfx: &mut G)
     where G: Graphics
 {
     // TODO: get color from angle
-    let color = color::hex("ffffff");
+    let color = angle_to_color(angle);
     let trafo = c.transform.trans(pos.0, pos.1).rot_rad(angle).scale(scale, scale);
 
     let p1: types::Polygon = &[
