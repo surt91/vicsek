@@ -10,6 +10,7 @@ pub struct Options {
     pub num_steps: Option<u64>,
     pub num_neighbors: Option<usize>,
     pub gnuplot: bool,
+    pub animate: bool,
 }
 
 pub fn parse_cl() -> Options {
@@ -21,6 +22,13 @@ pub fn parse_cl() -> Options {
                     .short("g")
                     .long("gnuplot")
                     .help("render via gnuplot and convert with ffmpeg")
+                    .conflicts_with("animate")
+              )
+              .arg(Arg::with_name("animate")
+                    .short("a")
+                    .long("animate")
+                    .help("render to screen")
+                    .conflicts_with("gnuplot")
               )
               .arg(Arg::with_name("seed")
                     .long("seed")
@@ -53,6 +61,7 @@ pub fn parse_cl() -> Options {
               )
               .get_matches();
 
+    let animate = matches.is_present("animate");
     let gnuplot = matches.is_present("gnuplot");
     let filename = matches.value_of("filename")
                           .and_then(|f| Some(f.to_string()))
@@ -78,6 +87,7 @@ pub fn parse_cl() -> Options {
         seed,
         filename,
         gnuplot,
+        animate,
         num_birds,
         num_neighbors,
         num_steps

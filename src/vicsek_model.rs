@@ -13,7 +13,7 @@ use cell_list::CellList;
 
 
 pub struct Vicsek {
-    birds: Vec<Bird>,
+    pub birds: Vec<Bird>,
     neighbors: usize,
     eta: f64,
     rng: rand::StdRng,

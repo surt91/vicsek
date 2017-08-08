@@ -11,6 +11,7 @@ mod cell_list;
 mod vicsek_model;
 mod bird;
 mod parse_cl;
+mod animate;
 
 
 fn run(num_birds: u64, num_iterations: u64, neighbors: usize, filename: &str) -> io::Result<()> {
@@ -61,10 +62,15 @@ fn run(num_birds: u64, num_iterations: u64, neighbors: usize, filename: &str) ->
 
 fn main() {
     let o = parse_cl::parse_cl();
-    // TODO alternatively show on screen, dont save anything
-    run(o.num_birds.unwrap_or(500),
-        o.num_steps.unwrap_or(300),
-        o.num_neighbors.unwrap_or(4),
-        &o.filename.unwrap_or("test".to_owned()),
-    ).expect("IO error");
+
+    if o.gnuplot {
+        run(o.num_birds.unwrap_or(500),
+            o.num_steps.unwrap_or(300),
+            o.num_neighbors.unwrap_or(4),
+            &o.filename.unwrap_or_else(|| "test".to_owned()),
+        ).expect("IO error");
+    } else {
+        let mut v = vicsek_model::Vicsek::new(o.num_birds.unwrap_or(500), o.num_neighbors.unwrap_or(4));
+        animate::show((500, 500), &mut v);
+    }
 }
