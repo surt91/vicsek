@@ -3,6 +3,7 @@ extern crate graphics;
 extern crate glutin_window;
 extern crate sdl2_window;
 extern crate opengl_graphics;
+extern crate fps_counter;
 extern crate rand;
 
 use std::cmp::min;
@@ -10,10 +11,12 @@ use std::cmp::min;
 use self::graphics::*;
 use self::sdl2_window::Sdl2Window as Window;
 use self::piston::window::WindowSettings;
+use self::piston::input::keyboard::Key::*;
 
 use self::opengl_graphics::{GlGraphics, OpenGL};
 use self::piston::event_loop::{Events, EventSettings};
 use self::piston::input::{Button, Input};
+use self::fps_counter::FPSCounter;
 
 use super::vicsek_model::Vicsek;
 use super::bird::Bird;
@@ -53,23 +56,38 @@ pub fn show(size: (u32, u32), vicsek: &mut Vicsek) {
                                             .unwrap();
 
     let mut gfx = GlGraphics::new(OpenGL::V3_2);
+    let mut fps = FPSCounter::new();
+    let mut sweeps_per_second = 100.;
+    let mut rate = 0;
 
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
         match e {
             Input::Render(args) => {
+                rate = fps.tick();
+
                 gfx.draw(args.viewport(), |c, gfx| {
                     vicsek.render(&c, gfx, &size);
                 });
             }
 
             Input::Press(Button::Keyboard(key)) => {
-                // TODO
+                match key {
+                    F => println!("{} FPS", rate),
+                    Up => {
+                        sweeps_per_second *= 1.2;
+                        println!("{} sweeps per second", sweeps_per_second);
+                    }
+                    Down => {
+                        sweeps_per_second /= 1.2;
+                        println!("{} sweeps per second", sweeps_per_second);
+                    }
+                    _ => ()
+                };
             }
 
             Input::Update(args) => {
-                // 100 sweeps per second
-                vicsek.sweep((args.dt * 100.).ceil() as u64);
+                vicsek.sweep((args.dt * sweeps_per_second).ceil() as u64);
             }
 
             _ => {}

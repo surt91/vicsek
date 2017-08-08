@@ -12,3 +12,5 @@ pistoncore-glutin_window = "*"
 pistoncore-sdl2_window = "*"
 piston2d-graphics = "*"
 piston2d-opengl_graphics = "*"
+
+fps_counter = "*"
