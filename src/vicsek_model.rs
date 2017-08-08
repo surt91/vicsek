@@ -1,6 +1,9 @@
 extern crate rand;
 use rand::distributions::{Normal, IndependentSample};
-use rand::Rng;
+use rand::{thread_rng, Rng};
+
+extern crate rayon;
+use self::rayon::prelude::*;
 
 use std::fs::File;
 use std::io::prelude::*;
@@ -51,16 +54,16 @@ impl Vicsek {
         let normal = Normal::new(0., self.eta);
         for _ in 0..n {
             // clone the birds: no borrow conflict -> synchrone update
-            let cloned_birds = self.birds.clone();
-            // TODO: this loop can be parallized by rayon
-            for (idx, mut b) in self.birds.iter_mut().enumerate() {
-                let noise = [normal.ind_sample(&mut self.rng), normal.ind_sample(&mut self.rng)];
+            let mut cloned_birds = self.birds.clone();
+
+            cloned_birds.par_iter_mut().for_each(|mut b| {
+                let noise = [normal.ind_sample(&mut thread_rng()), normal.ind_sample(&mut thread_rng())];
 
                 let mut candidates = Vec::new();
                 let mut level = 0;
                 'outer: loop {
-                    for i in &self.cell_list.adjacent_level(b, level, &cloned_birds) {
-                        candidates.push(cloned_birds[*i].clone());
+                    for i in &self.cell_list.adjacent_level(b, level, &self.birds) {
+                        candidates.push(self.birds[*i].clone());
                         if candidates.len() >= self.neighbors {
                             break 'outer
                         }
@@ -71,11 +74,14 @@ impl Vicsek {
                 b.update_direction(&candidates, noise);
                 // b.update_direction_disk(&cloned_birds, self.c_r, noise);
 
-                // remove from cell list before update
-                self.cell_list.remove(b.r, idx);
                 b.update_r();
-                // add to new cell after update
-                self.cell_list.add(b.r, idx);
+            });
+            self.birds = cloned_birds;
+
+            // recreate Cell list
+            self.cell_list.clear();
+            for (idx, b) in self.birds.iter().enumerate() {
+                self.cell_list.add(b.r, idx)
             }
         }
     }

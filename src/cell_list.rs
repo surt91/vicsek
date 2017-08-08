@@ -30,6 +30,10 @@ impl CellList {
         self.list[x*self.l + y].remove(&idx);
     }
 
+    pub fn clear(&mut self) {
+        self.list = vec![HashSet::new(); self.l.pow(2)];
+    }
+
     // TODO make into an iterator
     pub fn adjacent_level(&self, bird: &Bird, n: i64, pos: &[Bird]) -> Vec<usize>
     {
