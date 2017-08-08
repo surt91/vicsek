@@ -31,14 +31,14 @@ fn run(num_birds: u64, num_iterations: u64, neighbors: usize, filename: &str) ->
     write!(file, "unset tics\n")?;
     write!(file, "unset key\n")?;
     write!(file, "unset colorbox\n")?;
-    write!(file, "set style arrow 1 head filled size screen 0.025, 30, 45 ls 1 lc palette\n")?;
+    write!(file, "set style arrow 1 head filled size screen 0.025, 30, 45 fixed ls 1 lt -1 lc palette\n")?;
 
     for i in 0..num_iterations {
         let dataname = format!("data/{}_{:04}.dat", filename, i);
         v.save(&dataname)?;
 
         write!(file, "set output 'img/{}_{:04}.png'\n", filename, i)?;
-        write!(file, "p '{}'  u 1:2:($3*0.03):($4*0.03):5 with vectors arrowstyle 1\n", dataname)?;
+        write!(file, "p '{}'  u 1:2:($3*0.003):($4*0.003):5 with vectors arrowstyle 1\n", dataname)?;
 
         v.sweep(5);
     }
