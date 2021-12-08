@@ -1,7 +1,6 @@
 extern crate piston;
 extern crate graphics;
 extern crate glutin_window;
-extern crate sdl2_window;
 extern crate opengl_graphics;
 extern crate fps_counter;
 extern crate rand;
@@ -10,7 +9,7 @@ use std::cmp::min;
 use std::f64::consts::PI;
 
 use self::graphics::*;
-use self::sdl2_window::Sdl2Window as Window;
+use self::glutin_window::GlutinWindow as Window;
 use self::piston::window::WindowSettings;
 use self::piston::input::keyboard::Key::*;
 
@@ -78,6 +77,8 @@ pub fn show(size: (u32, u32), vicsek: &mut Vicsek) {
     let mut window: Window = WindowSettings::new("Vicsek", [size.0, size.1])
                                             .samples(4)
                                             .exit_on_esc(true)
+                                            .decorated(false)
+                                            .srgb(false)
                                             .build()
                                             .unwrap();
 

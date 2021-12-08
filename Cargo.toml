@@ -4,14 +4,13 @@ version = "0.1.0"
 authors = ["Hendrik Schawe <surt91gmail.com>"]
 
 [dependencies]
-rand = "*"
-clap = "*"
-rayon = "*"
+rand = "0.4"
+clap = "2.24"
+rayon = "0.8"
 
-piston = "*"
-pistoncore-glutin_window = "*"
-pistoncore-sdl2_window = "*"
-piston2d-graphics = "*"
-piston2d-opengl_graphics = "*"
+piston = "0.32"
+pistoncore-glutin_window = "0.38"
+piston2d-graphics = "0.21"
+piston2d-opengl_graphics = "0.46"
 
-fps_counter = "*"
+fps_counter = "0.2"

@@ -1,0 +1,7 @@
+target/
+.git/
+example.png
+
+Dockerfile
+.dockerignore
+docker-compose.yml
