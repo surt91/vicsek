@@ -1,20 +1,16 @@
 #[derive(Clone, Debug)]
 pub struct Bird {
-    pub r: [f64; 2],
-    pub v: [f64; 2],
-    pub v0: f64,
+    pub r: [f32; 2],
+    pub v: [f32; 2],
+    pub v0: f32,
 }
 
 impl Bird {
-    pub fn new(r: [f64; 2], v: [f64; 2], v0: f64) -> Bird {
-        Bird {
-            r,
-            v,
-            v0,
-        }
+    pub fn new(r: [f32; 2], v: [f32; 2], v0: f32) -> Bird {
+        Bird { r, v, v0 }
     }
 
-    pub fn update_direction(&mut self, birds: &[Bird], noise: [f64; 2]) {
+    pub fn update_direction(&mut self, birds: &[Bird], noise: [f32; 2]) {
         let mut dx = 0.;
         let mut dy = 0.;
 
@@ -23,7 +19,7 @@ impl Bird {
             dy += b.v[1];
         }
         let norm = (dx.powi(2) + dy.powi(2)).sqrt();
-        self.v = [dx/norm + noise[0], dy/norm + noise[1]];
+        self.v = [dx / norm + noise[0], dy / norm + noise[1]];
     }
 
     pub fn update_r(&mut self) {
@@ -44,22 +40,22 @@ impl Bird {
     }
 
     /// return squared eucledian dist respecting periodic boundaries
-    pub fn dist2(&self, other: &Bird) -> f64 {
+    pub fn dist2(&self, other: &Bird) -> f32 {
         // take the image bird nearest to you
         let dx = self.dist_x(other);
         let dy = self.dist_y(other);
         // since the space is 1x1, just take min(x, x-1) for periodic boundaries
-        let dx = if dx < (dx-1.).abs() {dx} else {dx-1.};
-        let dy = if dy < (dy-1.).abs() {dy} else {dy-1.};
+        let dx = if dx < (dx - 1.).abs() { dx } else { dx - 1. };
+        let dy = if dy < (dy - 1.).abs() { dy } else { dy - 1. };
 
         dx.powi(2) + dy.powi(2)
     }
 
-    fn dist_x(&self, other: &Bird) -> f64 {
-        (self.r[0] - other.r[0])
+    fn dist_x(&self, other: &Bird) -> f32 {
+        self.r[0] - other.r[0]
     }
 
-    fn dist_y(&self, other: &Bird) -> f64 {
-        (self.r[1] - other.r[1])
+    fn dist_y(&self, other: &Bird) -> f32 {
+        self.r[1] - other.r[1]
     }
 }
