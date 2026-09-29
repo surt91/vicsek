@@ -59,7 +59,8 @@ impl eframe::App for VicsekApp {
         eframe::set_value(storage, eframe::APP_KEY, self);
     }
 
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        let ctx = ui.ctx().clone();
         let Self {
             num_birds,
             num_neighbors,
@@ -68,7 +69,7 @@ impl eframe::App for VicsekApp {
         } = self;
 
         // A window to change the parameters of the model
-        egui::Window::new("Parameters").show(ctx, |ui| {
+        egui::Window::new("Parameters").show(&ctx, |ui| {
             ui.add(egui::Slider::new(num_birds, 12..=1000).text("number of birds"));
             vicsek.set_num_birds(*num_birds);
 
@@ -95,7 +96,7 @@ impl eframe::App for VicsekApp {
             }
         });
 
-        egui::CentralPanel::default().show(ctx, |ui| {
+        egui::CentralPanel::default().show(ui, |ui| {
             let mut painter_size = ui.available_size_before_wrap();
             if !painter_size.is_finite() {
                 painter_size = egui::vec2(500.0, 500.0);

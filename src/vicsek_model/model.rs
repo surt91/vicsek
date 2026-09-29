@@ -44,9 +44,9 @@ impl Vicsek {
     }
 
     fn add_bird(&mut self) {
-        let theta = self.rng.gen::<f32>() * 2. * PI;
+        let theta = self.rng.random::<f32>() * 2. * PI;
         let v = [theta.cos(), theta.sin()];
-        let r = [self.rng.gen::<f32>(), self.rng.gen::<f32>()];
+        let r = [self.rng.random::<f32>(), self.rng.random::<f32>()];
         let v0 = 0.001;
         self.cell_list.add(r, self.birds.len());
         self.birds.push(Bird::new(r, v, v0));

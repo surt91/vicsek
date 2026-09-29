@@ -11,7 +11,7 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "vicsek",
         native_options,
-        Box::new(|cc| Box::new(vicsek::VicsekApp::new(cc))),
+        Box::new(|cc| Ok(Box::new(vicsek::VicsekApp::new(cc)))),
     )
 }
 
@@ -27,11 +27,20 @@ fn main() {
     let web_options = eframe::WebOptions::default();
 
     wasm_bindgen_futures::spawn_local(async {
+        use eframe::wasm_bindgen::JsCast as _;
+
+        let canvas = eframe::web_sys::window()
+            .and_then(|window| window.document())
+            .and_then(|document| document.get_element_by_id("the_canvas_id")) // hardcode it
+            .expect("failed to find the_canvas_id")
+            .dyn_into::<eframe::web_sys::HtmlCanvasElement>()
+            .expect("the_canvas_id was not a HtmlCanvasElement");
+
         eframe::WebRunner::new()
             .start(
-                "the_canvas_id", // hardcode it
+                canvas,
                 web_options,
-                Box::new(|cc| Box::new(vicsek::VicsekApp::new(cc))),
+                Box::new(|cc| Ok(Box::new(vicsek::VicsekApp::new(cc)))),
             )
             .await
             .expect("failed to start eframe");
